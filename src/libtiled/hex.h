@@ -1,8 +1,6 @@
 /*
- * imagelayer.cpp
- * Copyright 2011, Gregory Nickonov <gregory@nickonov.ru>
- * Copyright 2012, Alexander Kuhrt <alex@qrt.de>
- *
+ * hex.h
+ * Copyright 2017, Benjamin Trotter <bdtrotte@ucsc.edu>
  * This file is part of libtiled.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,65 +25,56 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "imagelayer.h"
+#pragma once
+
+#include "tiled.h"
 #include "map.h"
+#include <QPoint>
 
-#include <QBitmap>
+namespace Tiled {
 
-using namespace Tiled;
-
-ImageLayer::ImageLayer(const QString &name, int x, int y):
-    Layer(ImageLayerType, name, x, y)
+/**
+ * Represents a hex position in cube coordinates.
+ */
+class Hex
 {
-}
+public:
+    Hex(int x, int y, int z);
 
-ImageLayer::~ImageLayer()
-{
-}
+    Hex(QPoint staggerPoint,
+        Map::StaggerIndex staggerIndex,
+        Map::StaggerAxis staggerAxis);
 
-void ImageLayer::resetImage()
-{
-    mImage = QPixmap();
-    mImageSource.clear();
-}
+    Hex(int col, int row,
+        Map::StaggerIndex staggerIndex,
+        Map::StaggerAxis staggerAxis);
 
-bool ImageLayer::loadFromImage(const QImage &image, const QString &fileName)
-{
-    mImageSource = fileName;
+    QPoint toStaggered(Map::StaggerIndex staggerIndex,
+                       Map::StaggerAxis staggerAxis) const;
 
-    if (image.isNull()) {
-        mImage = QPixmap();
-        return false;
-    }
+    void rotate(RotateDirection direction);
 
-    mImage = QPixmap::fromImage(image);
+    int x() const { return mX; }
+    int y() const { return mY; }
+    int z() const { return mZ; }
 
-    if (mTransparentColor.isValid()) {
-        const QImage mask = image.createMaskFromColor(mTransparentColor.rgb());
-        mImage.setMask(QBitmap::fromImage(mask));
-    }
+    void setX(int x) { mX = x; }
+    void setY(int y) { mY = y; }
+    void setZ(int z) { mZ = z; }
 
-    return true;
-}
+    void setStaggered(int col, int row,
+                      Map::StaggerIndex staggerIndex,
+                      Map::StaggerAxis staggerAxis);
 
-bool ImageLayer::isEmpty() const
-{
-    return mImage.isNull();
-}
+    Hex operator +(Hex h) const;
+    Hex operator -(Hex h) const;
+    Hex& operator +=(Hex h);
+    Hex& operator -=(Hex h);
 
-ImageLayer *ImageLayer::clone() const
-{
-    return initializeClone(new ImageLayer(mName, mX, mY));
-}
+private:
+    int mX;
+    int mY;
+    int mZ;
+};
 
-ImageLayer *ImageLayer::initializeClone(ImageLayer *clone) const
-{
-    Layer::initializeClone(clone);
-
-    clone->mImageSource = mImageSource;
-    clone->mTransparentColor = mTransparentColor;
-    clone->mImage = mImage;
-
-    return clone;
-}
-
+} // namespace Tiled

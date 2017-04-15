@@ -205,6 +205,7 @@ public:
 
     StaggerIndex staggerIndex() const;
     void setStaggerIndex(StaggerIndex staggerIndex);
+    void invertStaggerIndex();
 
     /**
      * Returns the margins that have to be taken into account when figuring
@@ -374,7 +375,7 @@ public:
     void initializeObjectIds(ObjectGroup &objectGroup);
 
 private:
-    friend class GroupLayer;    // so it cal call adoptLayer
+    friend class GroupLayer;    // so it can call adoptLayer
 
     void adoptLayer(Layer *layer);
 
@@ -427,6 +428,11 @@ inline Map::StaggerIndex Map::staggerIndex() const
 inline void Map::setStaggerIndex(StaggerIndex staggerIndex)
 {
     mStaggerIndex = staggerIndex;
+}
+
+inline void Map::invertStaggerIndex()
+{
+    mStaggerIndex = static_cast<StaggerIndex>(!mStaggerIndex);
 }
 
 inline void Map::invalidateDrawMargins()
